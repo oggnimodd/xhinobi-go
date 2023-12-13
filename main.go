@@ -52,7 +52,7 @@ func GetFiles(files []string) []FileData {
 
 				// Prepend file name if flag is set to true
 				if cli.Flags.PrependFileName {
-					fileContent = fileName + " " + fileContent
+					fileContent = "<" + fileName + ">" + " " + fileContent
 				}
 
 			} else {
