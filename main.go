@@ -13,6 +13,7 @@ import (
 	"github.com/atotto/clipboard"
 
 	// local
+	"xhinobi-go/cli"
 	"xhinobi-go/constants"
 	"xhinobi-go/helpers"
 )
@@ -48,6 +49,12 @@ func GetFiles(files []string) []FileData {
 				}
 
 				fileContent = string(content)
+
+				// Prepend file name if flag is set to true
+				if cli.Flags.PrependFileName {
+					fileContent = fileName + " " + fileContent
+				}
+
 			} else {
 				fileContent = fileName
 			}
@@ -69,9 +76,12 @@ func ProcessFiles(files []FileData) {
 		final += content.Text
 	}
 
-	re := regexp.MustCompile(`\s+`)
-	final = re.ReplaceAllString(final, " ")
-	final = strings.TrimSpace(final)
+	// Minify
+	if cli.Flags.Minify {
+		re := regexp.MustCompile(`\s+`)
+		final = re.ReplaceAllString(final, " ")
+		final = strings.TrimSpace(final)
+	}
 
 	if constants.IsCloudEnvironment {
 		tempfilename, err := helpers.CreateTempFile(final)
@@ -100,18 +110,30 @@ func ProcessFiles(files []FileData) {
 }
 
 func main() {
-	scanner := bufio.NewScanner(os.Stdin)
+	// Setup root command
+	cli.SetupRootCommand()
 
+	// Execute the root command
+	if err := cli.RootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	// Read from stdin
+	scanner := bufio.NewScanner(os.Stdin)
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 
+	// Get files
 	var filePaths []string
 
 	for scanner.Scan() {
 		filePaths = append(filePaths, scanner.Text())
 	}
 
-	content := GetFiles(filePaths)
-	ProcessFiles(content)
+	if len(filePaths) > 0 {
+		content := GetFiles(filePaths)
+		ProcessFiles(content)
+	}
 }
