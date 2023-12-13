@@ -13,6 +13,7 @@ import (
 	"github.com/atotto/clipboard"
 
 	// local
+	"xhinobi-go/constants"
 	"xhinobi-go/helpers"
 )
 
@@ -72,13 +73,30 @@ func ProcessFiles(files []FileData) {
 	final = re.ReplaceAllString(final, " ")
 	final = strings.TrimSpace(final)
 
-	// Copy final to clipboard
-	err := clipboard.WriteAll(final)
-	if err != nil {
-		fmt.Println(err)
+	if constants.IsCloudEnvironment {
+		tempfilename, err := helpers.CreateTempFile(final)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		cmd, err := helpers.OpenTempFileInCode(tempfilename)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		err = cmd.Wait()
+		if err != nil {
+			fmt.Println(err)
+		}
 	} else {
-		fmt.Printf("Copied %d characters to clipboard\n", len(final))
+		err := clipboard.WriteAll(final)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Printf("Copied %d characters to clipboard\n", len(final))
+		}
 	}
+
 }
 
 func main() {
