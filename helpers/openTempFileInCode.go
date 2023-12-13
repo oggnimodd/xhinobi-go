@@ -5,7 +5,6 @@ import (
 	"xhinobi-go/constants"
 )
 
-
 func OpenTempFileInCode(file string) (*exec.Cmd, error) {
 	var cmd *exec.Cmd
 	if constants.IsGoogleCloud {

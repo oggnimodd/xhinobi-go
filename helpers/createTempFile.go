@@ -6,7 +6,6 @@ import (
 	"xhinobi-go/constants"
 )
 
-
 func CreateTempFile(text string) (string, error) {
 	var tempFilePath string
 	if constants.IsCloudEnvironment {
