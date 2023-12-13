@@ -61,7 +61,7 @@ func GetFiles(files []string) []FileData {
 
 			results = append(results, FileData{
 				Text: fileContent,
-				Name: fileName,
+				Name: "<" + fileName + ">",
 			})
 		}
 	}
