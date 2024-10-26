@@ -1,4 +1,4 @@
-module xhinobi-go
+module github.com/oggnimodd/xhinobi-go
 
 go 1.20
 
