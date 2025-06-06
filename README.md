@@ -25,3 +25,4 @@ xhinobi supports several options that can be used to customize its behavior:
 - `-m` or `--minify`: Minify the output.
 - `-i` or `--ignore`: Glob patterns to ignore (can be used multiple times).
 - `-t` or `--tree`: Prepend the output with a directory tree (requires 'tree' command).
+- `-o` or `--osc52`: Use the OSC52 escape sequence to copy to the clipboard. This is essential for copying text from a remote machine over SSH to your local clipboard, provided you use a compatible terminal (e.g., iTerm2, Kitty, WezTerm).

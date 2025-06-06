@@ -68,7 +68,7 @@ func ProcessFiles(files []FileData) {
 	var final string
 
 	if cli.Flags.WithTree {
-		final += helpers.GetTreeOutput()
+		final += helpers.GetTreeOutput(cli.Flags.IgnorePatterns)
 	}
 
 	for _, content := range files {
@@ -81,7 +81,11 @@ func ProcessFiles(files []FileData) {
 		final = strings.TrimSpace(final)
 	}
 
-	if constants.IsCloudEnvironment {
+	// New OSC52 logic takes precedence
+	if cli.Flags.OSC52 {
+		helpers.CopyToClipboardOSC52(final)
+		fmt.Printf("Sent %d characters to clipboard via OSC52\n", len(final))
+	} else if constants.IsCloudEnvironment {
 		tempfilename, err := helpers.CreateTempFile(final)
 		if err != nil {
 			fmt.Println(err)
