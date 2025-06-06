@@ -17,7 +17,7 @@ func IsTextFile(filename string) bool {
 
 	// First, check for exact filename matches (e.g., "Dockerfile", "Makefile")
 	for _, name := range textExtensions {
-		if lowerFilename == name {
+		if lowerFilename == strings.ToLower(name) {
 			return true
 		}
 	}
