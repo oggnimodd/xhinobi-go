@@ -23,3 +23,5 @@ xhinobi supports several options that can be used to customize its behavior:
 
 - `-n` or `--prependFileName`: Prepend the file name before the content. 
 - `-m` or `--minify`: Minify the output.
+- `-i` or `--ignore`: Glob patterns to ignore (can be used multiple times).
+- `-t` or `--tree`: Prepend the output with a directory tree (requires 'tree' command).

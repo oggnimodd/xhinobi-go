@@ -1,7 +1,6 @@
 package main
 
 import (
-	// std
 	"bufio"
 	"fmt"
 	"os"
@@ -9,10 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	// 3rd party
 	"github.com/atotto/clipboard"
 
-	// local
 	"xhinobi-go/cli"
 	"xhinobi-go/constants"
 	"xhinobi-go/helpers"
@@ -25,58 +22,59 @@ type FileData struct {
 
 func GetFiles(files []string) []FileData {
 	var results []FileData
-
-	// Filter files
+OuterLoop:
 	for _, file := range files {
 		if file != "" {
-			dir, err := os.Getwd()
-			if err != nil {
-				// Panic
-				panic(err)
+			for _, pattern := range cli.Flags.IgnorePatterns {
+				matched, err := filepath.Match(pattern, file)
+				if err != nil {
+					fmt.Printf("Warning: Invalid ignore pattern '%s': %v\n", pattern, err)
+					continue
+				}
+				if matched {
+					continue OuterLoop // Skip this file if it matches an ignore pattern.
+				}
 			}
 
-			// Join current directory with the file name
+			dir, err := os.Getwd()
+			if err != nil {
+				panic(err)
+			}
 			filePath := filepath.Join(dir, file)
-			// Get the file name basename
-			fileName := filepath.Base(filePath)
-
+			basename := filepath.Base(filePath)
 			var fileContent string
-			if helpers.IsTextFileExtension(filepath.Ext(fileName)) {
+			if helpers.IsTextFileExtension(filepath.Ext(basename)) {
 				content, err := os.ReadFile(filePath)
-
 				if err != nil {
 					fmt.Println(err)
 				}
-
 				fileContent = string(content)
-
-				// Prepend file name if flag is set to true
 				if cli.Flags.PrependFileName {
-					fileContent = "<" + fileName + ">" + " " + fileContent
+					fileContent = "<" + basename + ">" + " " + fileContent
 				}
-
 			} else {
-				fileContent = fileName
+				fileContent = basename
 			}
-
 			results = append(results, FileData{
 				Text: fileContent,
-				Name: "<" + fileName + ">",
+				Name: "<" + basename + ">",
 			})
 		}
 	}
-
 	return results
 }
 
 func ProcessFiles(files []FileData) {
 	var final string
 
+	if cli.Flags.WithTree {
+		final += helpers.GetTreeOutput()
+	}
+
 	for _, content := range files {
 		final += content.Text
 	}
 
-	// Minify
 	if cli.Flags.Minify {
 		re := regexp.MustCompile(`\s+`)
 		final = re.ReplaceAllString(final, " ")
@@ -88,12 +86,10 @@ func ProcessFiles(files []FileData) {
 		if err != nil {
 			fmt.Println(err)
 		}
-
 		cmd, err := helpers.OpenTempFileInCode(tempfilename)
 		if err != nil {
 			fmt.Println(err)
 		}
-
 		err = cmd.Wait()
 		if err != nil {
 			fmt.Println(err)
@@ -106,28 +102,21 @@ func ProcessFiles(files []FileData) {
 			fmt.Printf("Copied %d characters to clipboard\n", len(final))
 		}
 	}
-
 }
 
 func main() {
-	// Setup root command
 	cli.SetupRootCommand()
-
-	// Execute the root command
 	if err := cli.RootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	// Read from stdin
 	scanner := bufio.NewScanner(os.Stdin)
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
 	}
 
-	// Get files
 	var filePaths []string
-
 	for scanner.Scan() {
 		filePaths = append(filePaths, scanner.Text())
 	}
