@@ -43,7 +43,7 @@ OuterLoop:
 			filePath := filepath.Join(dir, file)
 			basename := filepath.Base(filePath)
 			var fileContent string
-			if helpers.IsTextFileExtension(filepath.Ext(basename)) {
+			if helpers.IsTextFile(basename) {
 				content, err := os.ReadFile(filePath)
 				if err != nil {
 					fmt.Println(err)
